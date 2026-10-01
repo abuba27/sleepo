@@ -1,40 +1,16 @@
-name: Build Sleepo APK
+- name: Setup Android SDK
+  uses: android-actions/setup-android@v3
+  with:
+    packages: |
+      platform-tools
+      platforms;android-34
+      build-tools;34.0.0
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+- name: Accept SDK licenses
+  run: yes | sdkmanager --licenses || true
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+- name: Setup Gradle
+  uses: gradle/actions/setup-gradle@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install SDK components
-        run: |
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-          yes | sdkmanager --licenses || true
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Sleepo-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+- name: Build debug APK
+  run: gradle assembleDebug --no-daemon --stacktrace
